@@ -1,53 +1,20 @@
-from flask import Flask, render_template, redirect, request, url_for
+from flask import Flask, render_template
+from flask_script import Manager
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
-print(app.config['ENV'])
 
-
-@app.route('/user/<name>')
-def hello_user(name):
-    return render_template('user.html', name=name)
+manager = Manager(app)
 
 
 @app.route('/')
-def hello_world():
-    print('hello,world!')
-    return render_template('user.html')
+def index():
+    return render_template('hello_world.html')
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
+@app.route('/login')
+def user():
+    return render_template('homepage.html')
 
 
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
-
-
-'''
-@app.route('/req', methods=['POST', 'GET'])
-def wow_test():
-    print(request.files)
-    print(request.files['file'])
-    my_file = request.files['file']
-    my_file.save('littleBoy.txt')
-    return 'OK,little boy!'
-'''
-
-
-# 访问地址 : /info 浏览器跳转至 /infos
-@app.route("/info", strict_slashes=True, redirect_to="/infos")
-def student_info():
-    return "Hello Old boy info"
-
-
-@app.route("/infos", strict_slashes=False)
-def student_infos():
-    return "Hello Old boy ru"
-
-
-if __name__ == '__main()__':
-
-    app.run()
+if __name__ == '__main__':
+    manager.run()
