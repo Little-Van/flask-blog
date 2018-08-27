@@ -1,18 +1,31 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
-from datetime import datetime
 from flask_moment import Moment
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import Required
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = '19920714'
 
 bootstrap = Bootstrap(app)
 
 moment = Moment(app)
 
 
-@app.route('/')
+class NameForm(FlaskForm):
+    name = StringField('What is your name?', validators=[Required()])
+    submit = SubmitField('Submit')
+
+
+@app.route('/', methods=['POST', 'GET'])
 def index():
-    return render_template('hello_world.html', current_time=datetime.utcnow())
+    name = None
+    form = NameForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        form.name.data = ''
+    return render_template('hello_world.html', form=form, name=name)
 
 
 @app.route('/login/<name>')
