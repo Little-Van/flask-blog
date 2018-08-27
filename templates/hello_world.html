@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>Hello World</h1>
-</body>
-</html>
+{%  extends 'base.html' %}
+{% block page_content %}
+<h1 class="pager">
+    The local date and time is {{ moment(current_time).format('LLL') }}.
+</h1>
+<p> That was {{  moment(current_time).fromNow(refresh=True) }}</p>
+{% endblock %}
