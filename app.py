@@ -4,9 +4,17 @@ from flask_moment import Moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
+from flask_sqlalchemy import SQLAlchemy
+import pymysql
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '19920714'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:0105@localhost/flasktest'
+app.config['SQLALCHEMY_COMMIT_TEARDOWN'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+
+db = SQLAlchemy(app)
 
 bootstrap = Bootstrap(app)
 
@@ -16,6 +24,26 @@ moment = Moment(app)
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[Required()])
     submit = SubmitField('Submit')
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    role_id = db.Column(db.String(64), primary_key=True)
+    role_name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role')
+
+    def __repr__(self):
+        return '<Role {}>'.format(self.role_name)
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id = db.Column(db.String(64), primary_key=True)
+    user_name = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.String(64), db.ForeignKey('roles.role_id'))
+
+    def __repr__(self):
+        return '<User {}>'.format(self.user_name)
 
 
 @app.route('/', methods=['POST', 'GET'])
