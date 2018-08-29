@@ -6,7 +6,8 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
-from flask_script import Manager
+from flask_script import Manager, Shell
+from flask_migrate import Migrate, MigrateCommand
 
 
 app = Flask(__name__)
@@ -23,6 +24,9 @@ bootstrap = Bootstrap(app)
 moment = Moment(app)
 
 manager = Manager(app)
+
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 
 
 class NameForm(FlaskForm):
@@ -50,9 +54,6 @@ class User(db.Model):
         return '<User {}>'.format(self.user_name)
 
 
-db.drop_all()
-db.create_all()
-
 '''
 pro_banana = Product(pro_name='banana')
 pro_apple = Product(pro_name='apple')
@@ -66,6 +67,13 @@ user_lisa = User(user_name='jinjia', hobby=pro_orange)
 db.session.add_all([pro_banana, pro_apple, pro_orange, user_little, user_runlan, user_cuper, user_lisa])
 db.session.commit()
 '''
+
+
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Product=Product)
+
+
+manager.add_command('shell', Shell(make_context=make_shell_context))
 
 
 @app.route('/', methods=['POST', 'GET'])
