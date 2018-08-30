@@ -10,6 +10,7 @@ from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 from flask_mail import Mail, Message
 import os
+from threading import Thread
 
 
 app = Flask(__name__)
@@ -81,12 +82,19 @@ db.session.commit()
 '''
 
 
+def send_thr_mail(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
 def send_email(to, subject, tempalte,  **kwargs):
     msg = Message(app.config['FLASKY_MAIL_SUNJECT_PREFIX'] + subject, sender=app.config['MAIL_USERNAME'],
                   recipients=[to])
     msg.body = render_template(tempalte + '.txt', **kwargs)
     msg.html = render_template(tempalte + '.html', **kwargs)
-    mail.send(msg)
+    thr_mail = Thread(target=send_thr_mail, args=(app, msg))
+    thr_mail.start()
+    return thr_mail
 
 
 def make_shell_context():
