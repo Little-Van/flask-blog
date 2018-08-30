@@ -8,6 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 import pymysql
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
+from flask_mail import Mail, Message
+import os
 
 
 app = Flask(__name__)
@@ -16,6 +18,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:0105@localhost/fla
 app.config['SQLALCHEMY_COMMIT_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['MAIL_SERVER'] = 'smtp.126.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['FLASK_ADMIN'] = os.environ.get('FLASK_ADMIN')
+app.config['FLASKY_MAIL_SUNJECT_PREFIX'] = '[Flasky]'
+
 
 db = SQLAlchemy(app)
 
@@ -24,6 +34,8 @@ bootstrap = Bootstrap(app)
 moment = Moment(app)
 
 manager = Manager(app)
+
+mail = Mail(app)
 
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
@@ -69,6 +81,14 @@ db.session.commit()
 '''
 
 
+def send_email(to, subject, tempalte,  **kwargs):
+    msg = Message(app.config['FLASKY_MAIL_SUNJECT_PREFIX'] + subject, sender=app.config['MAIL_USERNAME'],
+                  recipients=[to])
+    msg.body = render_template(tempalte + '.txt', **kwargs)
+    msg.html = render_template(tempalte + '.html', **kwargs)
+    mail.send(msg)
+
+
 def make_shell_context():
     return dict(app=app, db=db, User=User, Product=Product)
 
@@ -86,6 +106,8 @@ def index():
             db.session.add(user)
             db.session.commit()
             session['known'] = False
+            if app.config['FLASK_ADMIN']:
+                send_email(app.config['FLASK_ADMIN'], 'New User', 'mail/new_user', user=user)
         else:
             session['known'] = True
         session['name'] = form.name.data
