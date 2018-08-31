@@ -16,7 +16,7 @@ def index():
     if form.validate_on_submit():
         try:
             guest = User.query.filter_by(user_name=form.name.data).first()
-        except sqlalchemy.exc.ProgrammingError: # 捕获数据库表不存在异常并创建列表，使用exception as e，e是一个对象，e.__class__为异常所属类
+        except sqlalchemy.exc.ProgrammingError:  # 捕获数据库表不存在异常并创建列表，使用exception as e，e是一个对象，e.__class__为异常所属类
             db.create_all()
         finally:
             if not guest:
@@ -35,6 +35,6 @@ def index():
                            current_time=datetime.utcnow())
 
 
-@main.route('/login/<name>')
-def user(name):
-    return render_template('homepage.html', name=name)
+@main.route('/login/success')
+def hello():
+    return render_template('homepage.html')
