@@ -1,0 +1,4 @@
+Hello, {{ user.user_name }}:
+Please click the link follow to complete the register!
+{{ url_for('auth.confirm', token=token, _external=True) }}
+

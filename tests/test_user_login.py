@@ -7,7 +7,6 @@ class UserLoginTestCase(unittest.TestCase):
 
     def test_normal_login(self):
         user = User.query.filter_by(user_name='little').first()
-        print(user)
         self.assertTrue(user is not None)
 
     def test_email_notvalid(self):

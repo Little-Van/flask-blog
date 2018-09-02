@@ -1,0 +1,6 @@
+<h1>Hello, {{ user.user_name }}</h1>
+<p>Please click the link follow to complete the register!</p>
+<br>
+<a href="{{ url_for('auth.confirm', token=token, _external=True) }}">
+    confirm your account
+</a>
