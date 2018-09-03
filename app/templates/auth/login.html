@@ -12,5 +12,17 @@
     <p>
         New User? <a href="{{ url_for('auth.register') }}">Click here to register</a>
     </p>
+<br>
+    <p>
+        Forget password? <a href="{{ url_for('auth.reset_password_request') }}">Click here to reset password</a>
+    </p>
+<br>
+    <p>
+        Change your password? <a href="{{ url_for('auth.change_password') }}">Click here to change password</a>
+    </p>
+<br>
+    <p>
+        Change your email? <a href="{{ url_for('auth.change_email_request') }}">Click here to change email</a>
+    </p>
 </div>
 {% endblock %}

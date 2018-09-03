@@ -1,0 +1,7 @@
+<h1>Hello, {{ form.email.data }}</h1>
+<p>I heard you want to change  your email.</p>
+<p>Click the link follow to reset your email:</p>
+<br>
+<a href="{{ url_for('auth.change_email', token=token, _external=True) }}">
+    {{ url_for('auth.change_email', token=token, _external=True) }}
+</a>

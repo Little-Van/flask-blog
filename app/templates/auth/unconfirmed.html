@@ -9,7 +9,6 @@
 <div class="col-md-15" >
 <h3>Please click the link follow to confirm your account before using it!</h3>
 <br>
-<p3>If you want to visit the flask as a visitor</p3>
-<a href="{{ url_for('main.index') }}">Click here!</a>
+<a href="{{ url_for('auth.resend_confirmation') }}">Click here!</a>
 </div>
 {% endblock %}

@@ -27,3 +27,33 @@ class RegisterForm(FlaskForm):
     def validate_username(self, field):
         if User.query.filter_by(user_name=field.data).first():
             raise ValidationError('Username already registered!')
+
+
+class ResetPasswordRequest(FlaskForm):
+    email = StringField('Enter email you register', validators=[DataRequired(), Length(1, 64), Email()])
+    submit = SubmitField('look back password')
+
+
+class ResetPassword(FlaskForm):
+    password = PasswordField('New password', validators=[DataRequired(), EqualTo('password2', message=
+                                                                            'Password must match')])
+    password2 = PasswordField('Confirm password', validators=[DataRequired()])
+    submit = SubmitField('Reset')
+
+
+class ChangeEmailRequest(FlaskForm):
+    email = StringField('New email', validators=[DataRequired(), Length(1, 64), Email()])
+    password = PasswordField('Confirm password', validators=[DataRequired()])
+    submit = SubmitField('Change Email')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('Email already registered!')
+
+
+class ChangePassword(FlaskForm):
+    old_password = PasswordField('Old password', validators=[DataRequired()])
+    password = PasswordField('New password', validators=[DataRequired(), EqualTo('password2', message=
+                                                                            'Password must match')])
+    password2 = PasswordField('Confirm password', validators=[DataRequired()])
+    submit = SubmitField('Reset')

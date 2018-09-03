@@ -1,0 +1,5 @@
+Hello, {{ form.email.data }}
+I heard you want to change  your email.
+Click the link follow to reset your email:
+{{ url_for('auth.change_email', token=token, _external=True) }}
+
