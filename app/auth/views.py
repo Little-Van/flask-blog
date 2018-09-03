@@ -110,7 +110,7 @@ def reset_password(token):
         use_data = User.query.get(data.get('reset')).id
     except:
         flash('Invalid information,please confirmed')
-        return redirect('auth.reset_password_request')
+        return redirect(url_for('auth.reset_password_request'))
     form = ResetPassword()
     if form.validate_on_submit():
         if User.password_reset(token, form.password.data):
@@ -144,7 +144,7 @@ def change_email(token):
         return redirect(url_for('auth.logout'))
     else:
         flash('Invalid information')
-        return redirect(url_for(change_email_request))
+        return redirect(url_for('auth.change_email_request'))
 
 
 @auth.route('/change_password', methods=['POST', 'GET'])
