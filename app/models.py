@@ -1,19 +1,45 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from . import login_manager
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
-class Product(db.Model):
-    __tablename__ = 'products'
+class Permission:
+    FOLLOW = 0x01
+    COMMENT = 0x02
+    WRITE_ARTICLES = 0x04
+    MODERATE_COMMENTS = 0x08
+    ADMINISTER = 0x80
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
-    pro_name = db.Column(db.String(64), unique=True)
-    users = db.relationship('User', backref='hobby', lazy='dynamic')
+    role_name = db.Column(db.String(64), unique=True)
+    default = db.Column(db.Boolean, default=False, index=True)
+    permission = db.Column(db.Integer)
+    users = db.relationship('User', backref='role', lazy='dynamic')
+
+    @staticmethod
+    def insert_roles():
+        roles = {'User': (Permission.FOLLOW | Permission.COMMENT | Permission.WRITE_ARTICLES, True),
+                 'Moderator': (Permission.FOLLOW | Permission.COMMENT | Permission.WRITE_ARTICLES\
+                               | Permission.MODERATE_COMMENTS, False),
+                 'ADMINISTER': (0xff, False)
+        }
+        for r in roles:
+            role = Role.query.filter_by(role_name=r).first()
+            if role is None:
+                role = Role(role_name=r)
+            role.default = roles[r][1]
+            role.permission = roles[r][0]
+            db.session.add(role)
+        db.session.commit()
 
     def __repr__(self):
-        return '<Product {}>'.format(self.pro_name)
+        return '<Role {}>'.format(self.role_name)
 
 
 class User(UserMixin, db.Model):
@@ -22,8 +48,20 @@ class User(UserMixin, db.Model):
     user_name = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    pro_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.role is None:
+            if self.email == current_app.config['FLASK_ADMIN']:
+                self.role = Role.query.filter_by(permission=0xff).first()
+            else:
+                self.role = Role.query.filter_by(default=True).first()
+
+    def __repr__(self):
+        return '<User {}>'.format(self.user_name)
+
 
     @property
     def password(self):
@@ -82,8 +120,23 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    def __repr__(self):
-        return '<User {}>'.format(self.user_name)
+    def can(self, permission):
+        return self.role is not None and (self.role.permission&permission) == permission
+
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
+
+
+class AnonymousUser(AnonymousUserMixin):
+
+    def can(self, permission):
+        return False
+
+    def is_administrator(self):
+        return False
+
+
+login_manager.anonymous_user = AnonymousUser
 
 
 @login_manager.user_loader

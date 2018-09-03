@@ -5,6 +5,9 @@ from .. import db
 from ..models import User
 from .forms import NameForm
 from ..email import send_email
+from ..models import Permission
+from ..decorators import admin_required, permission_required
+from flask_login import login_required
 import pymysql
 import sqlalchemy
 
@@ -37,4 +40,18 @@ def index():
 
 @main.route('/login/success')
 def hello():
+    return render_template('homepage.html')
+
+
+@main.route('/admin')
+@login_required
+@admin_required
+def for_admin_only():
+    return render_template('homepage.html')
+
+
+@main.route('/moderators')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def for_moderators_only():
     return render_template('homepage.html')
