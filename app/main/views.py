@@ -1,4 +1,4 @@
-from flask import session, redirect, render_template, url_for, current_app
+from flask import session, redirect, render_template, url_for, current_app, abort
 from datetime import datetime
 from . import main
 from .. import db
@@ -55,3 +55,11 @@ def for_admin_only():
 @permission_required(Permission.MODERATE_COMMENTS)
 def for_moderators_only():
     return render_template('homepage.html')
+
+
+@main.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(user_name=username).first()
+    if user is None:
+        abort(404)
+    return render_template('user.html', user=user)
