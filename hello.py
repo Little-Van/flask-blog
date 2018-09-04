@@ -121,7 +121,7 @@ def index():
         session['name'] = form.name.data
         form.name.data = ''
         return redirect(url_for('index'))
-    return render_template('hello_world.html', form=form, name=session.get('name'), konwn=session.get('known', False))
+    return render_template('index.html', form=form, name=session.get('name'), konwn=session.get('known', False))
 
 
 @app.route('/login/<name>')

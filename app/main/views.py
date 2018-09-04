@@ -1,41 +1,21 @@
-from flask import session, redirect, render_template, url_for, current_app, abort, flash
+from flask import redirect, render_template, url_for, current_app, abort, flash
 from datetime import datetime
 from . import main
 from .. import db
-from ..models import User
-from .forms import NameForm, EditProfileForm, EditProfileAdminForm
-from ..email import send_email
-from ..models import Permission
+from ..models import User, Post, Permission
+from .forms import PostForm, EditProfileForm, EditProfileAdminForm
 from ..decorators import admin_required, permission_required
 from flask_login import login_required, current_user
-import pymysql
-import sqlalchemy
 
 
 @main.route('/', methods=['POST', 'GET'])
 def index():
-    form = NameForm()
-    guest = None
-    if form.validate_on_submit():
-        try:
-            guest = User.query.filter_by(user_name=form.name.data).first()
-        except sqlalchemy.exc.ProgrammingError:  # 捕获数据库表不存在异常并创建列表，使用exception as e，e是一个对象，e.__class__为异常所属类
-            db.create_all()
-        finally:
-            if not guest:
-                user_model = User(user_name=form.name.data)
-                db.session.add(user_model)
-                db.session.commit()
-                session['known'] = False
-                if current_app.config['FLASK_ADMIN']:
-                    send_email(current_app.config['FLASK_ADMIN'], 'New User', 'mail/new_user', user=user_model)
-            else:
-                session['known'] = True
-            session['name'] = form.name.data
-            form.name.data = ''
-            return redirect(url_for('main.index'))
-    return render_template('hello_world.html', form=form, name=session.get('name'), konwn=session.get('known', False),
-                           current_time=datetime.utcnow())
+    form = PostForm()
+    if form.validate_on_submit() and current_user.can(Permission.WRITE_ARTICLES):
+        post = Post(body=form.body.data, author=current_user._get_current_object())
+        return redirect(url_for('main.index'))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
 
 
 @main.route('/login/success')
@@ -110,3 +90,6 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form)
+
+
+
