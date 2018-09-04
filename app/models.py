@@ -6,6 +6,7 @@ from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime
 
+
 class Permission:
     FOLLOW = 0x01
     COMMENT = 0x02
@@ -66,7 +67,6 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.user_name)
-
 
     @property
     def password(self):
@@ -134,8 +134,6 @@ class User(UserMixin, db.Model):
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
-
-
 
 
 class AnonymousUser(AnonymousUserMixin):

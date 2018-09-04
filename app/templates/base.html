@@ -36,6 +36,7 @@
                     <ul class="dropdown-menu">
                         <li> <a href="{{  url_for("auth.change_password") }}">Change password</a></li>
                         <li> <a href="{{  url_for("auth.change_email_request") }}">Change email</a></li>
+                        <li> <a href="{{  url_for("main.user", username=current_user.user_name) }}">Profile</a></li>
                         <li> <a href="{{  url_for("auth.logout") }}">Logout</a></li>
                     </ul>
                 </li>
