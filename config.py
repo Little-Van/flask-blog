@@ -8,6 +8,7 @@ class Config:
     FLASKY_MAIL_SUNJECT_PREFIX = '[Flasky]'
     FLASK_ADMIN = os.environ.get('FLASK_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    FLASK_POSTS_PER_PAGE = 10
 
     @staticmethod
     def init_app(app):

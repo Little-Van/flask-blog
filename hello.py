@@ -126,7 +126,7 @@ def index():
 
 @app.route('/login/<name>')
 def user(name):
-    return render_template('homepage.html', name=name)
+    return render_template('_post.html', name=name)
 
 
 @app.errorhandler(404)

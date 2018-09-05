@@ -1,5 +1,4 @@
-from flask import redirect, render_template, url_for, current_app, abort, flash
-from datetime import datetime
+from flask import redirect, render_template, url_for, current_app, abort, flash, request
 from . import main
 from .. import db
 from ..models import User, Post, Permission
@@ -14,27 +13,48 @@ def index():
     if form.validate_on_submit() and current_user.can(Permission.WRITE_ARTICLES):
         post = Post(body=form.body.data, author=current_user._get_current_object())
         return redirect(url_for('main.index'))
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('index.html', form=form, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(page,
+                                                                     per_page=current_app.config['FLASK_POSTS_PER_PAGE'],
+                                                                     error_out=False)
+    posts = pagination.items
+    return render_template('index.html', form=form, posts=posts, pagination=pagination)
 
 
-@main.route('/login/success')
-def hello():
-    return render_template('homepage.html')
+@main.route('/post/<int:id>')
+def post(id):
+    post = Post.query.get_or_404(id)
+    return render_template('post.html', posts=[post])
+
+
+@main.route('/edit/<int:id>', methods=['POST', 'GET'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    if current_user._get_current_object() != post.author and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash('The post has been updated.')
+        return redirect(url_for('main.post', id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
 
 
 @main.route('/admin')
 @login_required
 @admin_required
 def for_admin_only():
-    return render_template('homepage.html')
+    return render_template('_post.html')
 
 
 @main.route('/moderators')
 @login_required
 @permission_required(Permission.MODERATE_COMMENTS)
 def for_moderators_only():
-    return render_template('homepage.html')
+    return render_template('_post.html')
 
 
 @main.route('/user/<username>')
@@ -42,7 +62,8 @@ def user(username):
     user = User.query.filter_by(user_name=username).first()
     if user is None:
         abort(404)
-    return render_template('user.html', user=user)
+    posts = user.posts.order_by(Post.timestamp.desc()).all()
+    return render_template('user.html', user=user, posts=posts)
 
 
 @main.route('/edit_profile', methods=['POST', 'GET'])

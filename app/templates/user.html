@@ -1,5 +1,5 @@
 {%   extends 'base.html' %}
-{% block title  %}Flask{% endblock %}
+{% block title  %}Flask-{{ current_user.user_name }}{% endblock %}
 {% block page_content %}
     <div class="page-header">
        <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
@@ -33,6 +33,9 @@
         {% if current_user.is_administrator() %}
         <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin', id=user.id) }}">Edit profile force</a>
         {% endif %}
+        <br>
+        <h3>Post by {{ user.user_name }}</h3>
+            {% include '_post.html' %}
     </div>
 
     </div>

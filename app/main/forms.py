@@ -2,6 +2,7 @@ from wtforms import StringField, SubmitField, TextAreaField, SelectField, Boolea
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from ..models import Role, User
+from flask_pagedown.fields import PageDownField
 
 
 class NameForm(FlaskForm):
@@ -10,7 +11,7 @@ class NameForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
-    name = StringField('Read name', validators=[Length(0, 64)])
+    name = StringField('Real name', validators=[Length(0, 64)])
     location = StringField('Location', validators=[Length(0, 64)])
     about_me = TextAreaField('About me')
     submit = SubmitField('Submit')
@@ -44,7 +45,7 @@ class EditProfileAdminForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    body = TextAreaField("what's your mind?", validators=[DataRequired()])
+    body = PageDownField("what's your mind?", validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
